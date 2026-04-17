@@ -27,11 +27,17 @@ jobs:
       - name: Build Web
         run: flutter build web --release
 
+      - name: Prepare deployment package
+        run: |
+          cp server.js build/web/server.js
+          cp package.json build/web/package.json
+          cd build/web && npm install
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: flutter-web
-          path: build/web   # ← só envia a pasta buildada, não o projeto inteiro
+          path: build/web
 
   deploy:
     runs-on: ubuntu-latest
@@ -54,7 +60,6 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6C00A64EAE4340AAAA2853DEDBA81BF7 }}
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'hexatracker'
