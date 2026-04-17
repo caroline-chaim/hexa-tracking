@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hexa_tracker/module/games_list.dart';
 import 'package:hexa_tracker/ui/centered_view/centered_view.dart';
 
 import 'package:hexa_tracker/ui/search_bar/search_bar.dart';
@@ -41,10 +42,13 @@ class Home extends StatelessWidget {
                       ],
                     ),
                   ),
+ 
+                   Text("coisa")
 
-
-                  Text("teste de coluna")
+                 
                 ],
+
+                
               ),
 
               Container(

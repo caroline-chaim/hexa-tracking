@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hexa_tracker/pages/friends/friends.dart';
 import 'package:hexa_tracker/pages/home/home.dart';
+import 'package:hexa_tracker/pages/library/library.dart';
+import 'package:hexa_tracker/pages/recomendations/recommendations.dart';
+import 'package:hexa_tracker/pages/shop/shop.dart';
+import 'package:hexa_tracker/pages/winrate/winrate.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +21,16 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: Colors.amber
       ),
-      home: Home(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const Home(),
+        '/Recommendations': (context)=> const Recommendation(),
+        '/WinRate': (context)=> const WinRate(),
+        '/Shop' : (context)=> const Shop(),
+        '/Library' : (context)=> const Library(),
+        '/Friends' : (context)=> const Friends()
+      },
+      
     );
   }
 }

@@ -26,9 +26,9 @@ class NavigationBarr extends StatelessWidget {
               SizedBox(width: 30),
               _NevBarItem("Recommendations"),
               SizedBox(width: 30),
-              _NevBarItem("Win Rate"),
+              _NevBarItem("WinRate"),
               SizedBox(width: 30),
-              _NevBarItem("Shops"),
+              _NevBarItem("Shop"),
               SizedBox(width: 30),
               _NevBarItem("Library"),
               SizedBox(width: 30),
@@ -101,6 +101,15 @@ class _NevBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(title, style: GoogleFonts.lato(fontSize: 16));
+    return TextButton(
+      style: TextButton.styleFrom(foregroundColor: Colors.black),
+      onPressed: () {
+        if (title == 'Home') {
+          Navigator.pushNamed(context, '/');
+        }
+        Navigator.pushNamed(context, '/$title');
+      },
+      child: Text(title, style: GoogleFonts.lato(fontSize: 16)),
+    );
   }
 }
