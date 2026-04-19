@@ -1,13 +1,37 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hexa_tracker/module/games_list.dart';
-import 'package:hexa_tracker/ui/centered_view/centered_view.dart';
-
-import 'package:hexa_tracker/ui/search_bar/search_bar.dart';
+import 'package:hexa_tracker/services/api_service.dart';
 import 'package:hexa_tracker/ui/navigationBar/navigation_bar.dart';
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  String _nomeJogo = '';
+  String _imagemUrl = '';
+  bool _carregando = false;
+
+  Future<void> _buscarJogo() async {
+    setState(() => _carregando = true);
+    try {
+      final response = await ApiService.get('/thing?id=35424');
+      final json = jsonDecode(response.body);
+
+    setState(() {
+      _nomeJogo = json['item']['primaryname']['name'] ?? 'Nome não encontrado';
+      _imagemUrl = json['item']['imageurl'] ?? '';
+    });
+    } catch (e) {
+      setState(() => _nomeJogo = 'Erro: $e');
+    } finally {
+      setState(() => _carregando = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +44,6 @@ class Home extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
               Column(
                 children: [
@@ -42,13 +65,42 @@ class Home extends StatelessWidget {
                       ],
                     ),
                   ),
- 
-                   Text("coisa")
 
-                 
+                  SizedBox(height: 30),
+
+                  ElevatedButton(
+                    onPressed: _carregando ? null : _buscarJogo,
+                    child: _carregando
+                        ? CircularProgressIndicator()
+                        : Text('Buscar Jogo'),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // CARD DO JOGO
+                  if (_imagemUrl != '')
+                    Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+  ApiService.imagemUrl(_imagemUrl),
+  width: 200,
+  height: 250,
+  fit: BoxFit.cover,
+),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          _nomeJogo,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
-
-                
               ),
 
               Container(
@@ -61,27 +113,17 @@ class Home extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          "Best Games",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        Text("Best Games", style: TextStyle(color: Colors.white)),
                         SizedBox(width: 100),
-                        Text(
-                          "Victories",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        Text("Victories", style: TextStyle(color: Colors.white)),
                       ],
                     ),
-
                     Text("coisa"),
-
                     Text("Recent Games", style: TextStyle(color: Colors.white)),
                     Text("coisa"),
-
                     Text("Most Played", style: TextStyle(color: Colors.white)),
                     Text("coisa"),
                     Text("coisa"),
-
                     Text("coisa"),
                     Text("coisa"),
                   ],
