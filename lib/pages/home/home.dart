@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexa_tracker/services/api_service.dart';
+import 'package:hexa_tracker/ui/game_card/game_card.dart';
 import 'package:hexa_tracker/ui/navigationBar/navigation_bar.dart';
 
 class Home extends StatefulWidget {
@@ -12,124 +12,102 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  String _nomeJogo = '';
-  String _imagemUrl = '';
-  bool _carregando = false;
+  List<Map<String, String>> games = [];
+  bool isLoading = true;
+  bool isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
 
-  Future<void> _buscarJogo() async {
-    setState(() => _carregando = true);
-    try {
-      final response = await ApiService.get('/thing?id=35424');
-      final json = jsonDecode(response.body);
+  @override
+  void initState() {
+    super.initState();
+    _loadHotGames();
+  }
 
+  Future<void> _loadHotGames() async {
+    setState(() => isLoading = true);
+    final loaded = await ApiService.getHotGames();
     setState(() {
-      _nomeJogo = json['item']['primaryname']['name'] ?? 'Nome não encontrado';
-      _imagemUrl = json['item']['imageurl'] ?? '';
+      games = loaded;
+      isLoading = false;
+      isSearching = false;
     });
-    } catch (e) {
-      setState(() => _nomeJogo = 'Erro: $e');
-    } finally {
-      setState(() => _carregando = false);
+  }
+
+  Future<void> _searchGames(String query) async {
+    if (query.isEmpty) {
+      _loadHotGames();
+      return;
     }
+    setState(() => isLoading = true);
+    final loaded = await ApiService.searchGames(query);
+    setState(() {
+      games = loaded;
+      isLoading = false;
+      isSearching = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       body: Column(
         children: [
           NavigationBarr(),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  Container(
-                    margin: EdgeInsetsDirectional.only(start: 100, top: 50),
-                    child: Row(
-                      children: [
-                        Text(
-                          "Games",
-                          style: GoogleFonts.majorMonoDisplay(fontSize: 36),
-                        ),
-                        SizedBox(width: 200),
-                        SearchBar(
-                          leading: Icon(Icons.search),
-                          hintText: 'search',
-                          elevation: WidgetStateProperty.all(0),
-                          constraints: BoxConstraints.loose(Size(400, 50)),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 30),
-
-                  ElevatedButton(
-                    onPressed: _carregando ? null : _buscarJogo,
-                    child: _carregando
-                        ? CircularProgressIndicator()
-                        : Text('Buscar Jogo'),
-                  ),
-
-                  SizedBox(height: 20),
-
-                  // CARD DO JOGO
-                  if (_imagemUrl != '')
-                    Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-  ApiService.imagemUrl(_imagemUrl),
-  width: 200,
-  height: 250,
-  fit: BoxFit.cover,
-),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          _nomeJogo,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-
-              Container(
-                color: Color.fromARGB(255, 28, 113, 147),
-                alignment: Alignment.topLeft,
-                padding: EdgeInsets.only(left: 30, right: 50, top: 10),
-                margin: EdgeInsetsDirectional.only(end: 20, top: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text("Best Games", style: TextStyle(color: Colors.white)),
-                        SizedBox(width: 100),
-                        Text("Victories", style: TextStyle(color: Colors.white)),
-                      ],
-                    ),
-                    Text("coisa"),
-                    Text("Recent Games", style: TextStyle(color: Colors.white)),
-                    Text("coisa"),
-                    Text("Most Played", style: TextStyle(color: Colors.white)),
-                    Text("coisa"),
-                    Text("coisa"),
-                    Text("coisa"),
-                    Text("coisa"),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+            child: Row(
+              children: [
+                Text(
+                  isSearching ? "Resultados" : "Games",
+                  style: GoogleFonts.majorMonoDisplay(fontSize: 36),
+                ),
+                Spacer(),
+                SearchBar(
+                  controller: _searchController,
+                  leading: Icon(Icons.search),
+                  hintText: 'search',
+                  elevation: WidgetStateProperty.all(0),
+                  constraints: BoxConstraints.loose(Size(400, 50)),
+                  onSubmitted: (value) => _searchGames(value),
+                  trailing: [
+                    if (isSearching)
+                      IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () {
+                          _searchController.clear();
+                          _loadHotGames();
+                        },
+                      ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : games.isEmpty
+                    ? Center(child: Text('Nenhum jogo encontrado'))
+                    : GridView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 32),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 200 / 150,
+                        ),
+                        itemCount: games.length,
+                        itemBuilder: (context, index) {
+                          return GameCard(game: games[index]);
+                        },
+                      ),
           ),
         ],
       ),
