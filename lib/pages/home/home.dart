@@ -44,43 +44,83 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Column(
         children: [
           NavigationBarr(),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-            child: Row(
-              children: [
-                Text(
-                  isSearching ? "Resultados" : "Games",
-                  style: GoogleFonts.majorMonoDisplay(fontSize: 36),
-                ),
-                Spacer(),
-                SearchBar(
-                  controller: _searchController,
-                  leading: Icon(Icons.search),
-                  hintText: 'search',
-                  elevation: WidgetStateProperty.all(0),
-                  constraints: BoxConstraints.loose(Size(400, 50)),
-                  onSubmitted: (value) => _searchGames(value),
-                  trailing: [
-                    if (isSearching)
-                      IconButton(
-                        icon: Icon(Icons.close),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            isSearching = false;
-                            games = [];
-                          });
-                        },
-                      ),
-                  ],
-                ),
-              ],
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 16 : 32,
+              vertical: isMobile ? 12 : 20,
             ),
+            child: isMobile
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isSearching ? "Resultados" : "Games",
+                        style: GoogleFonts.majorMonoDisplay(fontSize: 24),
+                      ),
+                      SizedBox(height: 12),
+                      SearchBar(
+                        controller: _searchController,
+                        leading: Icon(Icons.search),
+                        hintText: 'search',
+                        elevation: WidgetStateProperty.all(0),
+                        constraints: BoxConstraints(
+                          maxWidth: double.infinity,
+                          maxHeight: 50,
+                        ),
+                        onSubmitted: (value) => _searchGames(value),
+                        trailing: [
+                          if (isSearching)
+                            IconButton(
+                              icon: Icon(Icons.close),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  isSearching = false;
+                                  games = [];
+                                });
+                              },
+                            ),
+                        ],
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      Text(
+                        isSearching ? "Resultados" : "Games",
+                        style: GoogleFonts.majorMonoDisplay(fontSize: 36),
+                      ),
+                      Spacer(),
+                      SearchBar(
+                        controller: _searchController,
+                        leading: Icon(Icons.search),
+                        hintText: 'search',
+                        elevation: WidgetStateProperty.all(0),
+                        constraints: BoxConstraints.loose(Size(400, 50)),
+                        onSubmitted: (value) => _searchGames(value),
+                        trailing: [
+                          if (isSearching)
+                            IconButton(
+                              icon: Icon(Icons.close),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  isSearching = false;
+                                  games = [];
+                                });
+                              },
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
           ),
           Expanded(
             child: isLoading
@@ -89,12 +129,14 @@ class _HomeState extends State<Home> {
                     ? games.isEmpty
                         ? Center(child: Text('Nenhum jogo encontrado'))
                         : GridView.builder(
-                            padding: EdgeInsets.symmetric(horizontal: 32),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 16 : 32,
+                            ),
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 5,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
+                              crossAxisCount: isMobile ? 2 : 5,
+                              crossAxisSpacing: isMobile ? 8 : 16,
+                              mainAxisSpacing: isMobile ? 8 : 16,
                               childAspectRatio: 200 / 150,
                             ),
                             itemCount: games.length,
@@ -163,7 +205,7 @@ class _HomeState extends State<Home> {
                           children: [
                             HotCarousel(),
                             Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 32),
+                              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
                               child: Divider(color: Colors.grey[300], thickness: 1),
                             ),
                             GameCarousel(
@@ -174,7 +216,7 @@ class _HomeState extends State<Home> {
                                     '224517', '13', '401636', '456440', '366013', '424981'],
                             ),
                             Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 32),
+                              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
                               child: Divider(color: Colors.grey[300], thickness: 1),
                             ),
                             GameCarousel(
@@ -184,16 +226,16 @@ class _HomeState extends State<Home> {
                                     '32471', '240980', '225694', '254640', '178900', '128882'],
                             ),
                             Padding(
-  padding: EdgeInsets.symmetric(horizontal: 32),
-  child: Divider(color: Colors.grey[300], thickness: 1),
-),
-GameCarousel(
-  title: 'MEMORY GAMES',
-  subtitle: 'Best memory games to play',
-  ids: ['352515', '98778', '355483', '190082', '375651', '164265',
-        '41916', '424975', '49', '230383', '28089', '36648',
-        '231999', '2266', '231197', '12346'],
-),
+                              padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+                              child: Divider(color: Colors.grey[300], thickness: 1),
+                            ),
+                            GameCarousel(
+                              title: 'MEMORY GAMES',
+                              subtitle: 'Best memory games to play',
+                              ids: ['352515', '98778', '355483', '190082', '375651', '164265',
+                                    '41916', '424975', '49', '230383', '28089', '36648',
+                                    '231999', '2266', '231197', '12346'],
+                            ),
                           ],
                         ),
                       ),
