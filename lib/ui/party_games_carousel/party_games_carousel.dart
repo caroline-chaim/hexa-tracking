@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:hexa_tracker/services/api_service.dart';
-import 'package:hexa_tracker/ui/game_page/game_page.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-class HotCarousel extends StatefulWidget {
-  const HotCarousel({super.key});
+class PartyGamesCarousel extends StatefulWidget {
+  const PartyGamesCarousel({super.key});
 
   @override
-  State<HotCarousel> createState() => _HotCarouselState();
+  State<PartyGamesCarousel> createState() => _PartyGamesCarouselState();
 }
 
-class _HotCarouselState extends State<HotCarousel> {
+class _PartyGamesCarouselState extends State<PartyGamesCarousel> {
   List<Map<String, String>> games = [];
   bool isLoading = true;
   final ScrollController _scrollController = ScrollController();
+
+  final List<String> partyGameIds = [
+    '188834', '2223', '226610', '39856', '262543', '172225',
+    '32471', '240980', '225694', '254640', '178900', '128882',
+  ];
 
   @override
   void initState() {
@@ -22,7 +25,7 @@ class _HotCarouselState extends State<HotCarousel> {
   }
 
   Future<void> _loadGames() async {
-    final loaded = await ApiService.getHotGames();
+    final loaded = await ApiService.getBatchGames(partyGameIds);
     setState(() {
       games = loaded;
       isLoading = false;
@@ -64,8 +67,16 @@ class _HotCarouselState extends State<HotCarousel> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'hot games',
-                    style: GoogleFonts.majorMonoDisplay(fontSize: 24),
+                    'PARTY GAMES',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  Text(
+                    'Best games to play with friends',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
                   ),
                 ],
               ),
@@ -92,51 +103,38 @@ class _HotCarouselState extends State<HotCarousel> {
                   itemCount: games.length,
                   itemBuilder: (context, index) {
                     final game = games[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => GamePage(
-                              id: game['id']!,
-                              name: game['name']!,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 200,
-                        margin: EdgeInsets.only(right: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                ApiService.proxyImage(game['image']!),
+                    return Container(
+                      width: 200,
+                      margin: EdgeInsets.only(right: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              ApiService.proxyImage(game['image']!),
+                              width: 200,
+                              height: 150,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
                                 width: 200,
                                 height: 150,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  width: 200,
-                                  height: 150,
-                                  color: Colors.grey[300],
-                                ),
+                                color: Colors.grey[300],
                               ),
                             ),
-                            SizedBox(height: 10),
-                            Text(
-                              game['name']!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            game['name']!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     );
                   },

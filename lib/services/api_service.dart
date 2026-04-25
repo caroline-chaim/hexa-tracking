@@ -46,6 +46,27 @@ static Future<List<Map<String, String>>> getBatchGames(List<String> ids) async {
   }).toList();
 }
 
+static Future<Map<String, String>> getGameFullDetails(String id) async {
+  final response = await get('/api/bgg/details/$id');
+  final data = jsonDecode(response.body);
+  return {
+    'id': data['id'],
+    'name': data['name'],
+    'yearpublished': data['yearpublished'],
+    'image': data['image'],
+    'thumbnail': data['thumbnail'],
+    'description': data['description'],
+    'minplayers': data['minplayers'],
+    'maxplayers': data['maxplayers'],
+    'minplaytime': data['minplaytime'],
+    'maxplaytime': data['maxplaytime'],
+    'minage': data['minage'],
+    'rating': data['rating'],
+    'weight': data['weight'],
+    'rank': data['rank'],
+  };
+}
+
 
  static Future<List<Map<String, String>>> searchGames(String query) async {
   final encoded = Uri.encodeComponent(query);

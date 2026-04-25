@@ -1,16 +1,25 @@
+
 import 'package:flutter/material.dart';
 import 'package:hexa_tracker/services/api_service.dart';
 import 'package:hexa_tracker/ui/game_page/game_page.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-class HotCarousel extends StatefulWidget {
-  const HotCarousel({super.key});
+class GameCarousel extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final List<String> ids;
+
+  const GameCarousel({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.ids,
+  });
 
   @override
-  State<HotCarousel> createState() => _HotCarouselState();
+  State<GameCarousel> createState() => _GameCarouselState();
 }
 
-class _HotCarouselState extends State<HotCarousel> {
+class _GameCarouselState extends State<GameCarousel> {
   List<Map<String, String>> games = [];
   bool isLoading = true;
   final ScrollController _scrollController = ScrollController();
@@ -22,7 +31,7 @@ class _HotCarouselState extends State<HotCarousel> {
   }
 
   Future<void> _loadGames() async {
-    final loaded = await ApiService.getHotGames();
+    final loaded = await ApiService.getBatchGames(widget.ids);
     setState(() {
       games = loaded;
       isLoading = false;
@@ -64,8 +73,16 @@ class _HotCarouselState extends State<HotCarousel> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'hot games',
-                    style: GoogleFonts.majorMonoDisplay(fontSize: 24),
+                    widget.title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  Text(
+                    widget.subtitle,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
                   ),
                 ],
               ),
