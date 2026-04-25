@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hexa_tracker/services/api_service.dart';
-import 'package:hexa_tracker/ui/game_card/game_card.dart';
+import 'package:hexa_tracker/ui/hot_carousel/hot_carousel.dart';
+import 'package:hexa_tracker/ui/best_sellers_carousel/best_sellers_carousel.dart';
 import 'package:hexa_tracker/ui/navigationBar/navigation_bar.dart';
 
 class Home extends StatefulWidget {
@@ -13,29 +14,16 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   List<Map<String, String>> games = [];
-  bool isLoading = true;
+  bool isLoading = false;
   bool isSearching = false;
   final TextEditingController _searchController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _loadHotGames();
-  }
-
-  Future<void> _loadHotGames() async {
-    setState(() => isLoading = true);
-    final loaded = await ApiService.getHotGames();
-    setState(() {
-      games = loaded;
-      isLoading = false;
-      isSearching = false;
-    });
-  }
-
   Future<void> _searchGames(String query) async {
     if (query.isEmpty) {
-      _loadHotGames();
+      setState(() {
+        isSearching = false;
+        games = [];
+      });
       return;
     }
     setState(() => isLoading = true);
@@ -82,7 +70,10 @@ class _HomeState extends State<Home> {
                         icon: Icon(Icons.close),
                         onPressed: () {
                           _searchController.clear();
-                          _loadHotGames();
+                          setState(() {
+                            isSearching = false;
+                            games = [];
+                          });
                         },
                       ),
                   ],
@@ -93,20 +84,77 @@ class _HomeState extends State<Home> {
           Expanded(
             child: isLoading
                 ? Center(child: CircularProgressIndicator())
-                : games.isEmpty
-                    ? Center(child: Text('Nenhum jogo encontrado'))
-                    : GridView.builder(
-                        padding: EdgeInsets.symmetric(horizontal: 32),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 200 / 150,
+                : isSearching
+                    ? games.isEmpty
+                        ? Center(child: Text('Nenhum jogo encontrado'))
+                        : GridView.builder(
+                            padding: EdgeInsets.symmetric(horizontal: 32),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 5,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 200 / 150,
+                            ),
+                            itemCount: games.length,
+                            itemBuilder: (context, index) {
+                              final game = games[index];
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    Image.network(
+                                      ApiService.proxyImage(game['image']!),
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          Container(color: Colors.grey[300]),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black.withOpacity(0.75),
+                                            ],
+                                          ),
+                                        ),
+                                        child: Text(
+                                          game['name']!,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          )
+                    : SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            HotCarousel(),
+                            Padding(
+  padding: EdgeInsets.symmetric(horizontal: 32),
+  child: Divider(color: Colors.grey[300], thickness: 1),
+),
+                            BestSellersCarousel(),
+                          ],
                         ),
-                        itemCount: games.length,
-                        itemBuilder: (context, index) {
-                          return GameCard(game: games[index]);
-                        },
                       ),
           ),
         ],

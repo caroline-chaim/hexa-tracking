@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  //static const String _baseUrl = 'http://localhost:3000';
-  static const String _baseUrl = 'https://hexa-tracker-server.azurewebsites.net';
+  static const String _baseUrl = 'http://localhost:3000';
+  //static const String _baseUrl = 'https://hexa-tracker-server.azurewebsites.net';
 
   static Future<http.Response> get(String endpoint) async {
     final response = await http.get(Uri.parse('$_baseUrl$endpoint'));
@@ -31,18 +31,20 @@ static Future<List<Map<String, String>>> getHotGames() async {
   return data.map<Map<String, String>>((g) => {
     'id': g['id'],
     'name': g['name'],
-    'image': g['thumbnail'], // usa thumbnail direto
+    'image': g['thumbnail'], 
   }).toList();
 }
-  static Future<List<Map<String, String>>> getRankedGames(int page) async {
-    final response = await get('/api/bgg/ranked?page=$page');
-    final List data = jsonDecode(response.body);
-    return data.map<Map<String, String>>((g) => {
-      'id': g['id'],
-      'name': g['name'],
-      'image': g['image'] ?? g['thumbnail'] ?? '',
-    }).toList();
-  }
+
+static Future<List<Map<String, String>>> getBatchGames(List<String> ids) async {
+  final idsParam = ids.join(',');
+  final response = await get('/api/bgg/batch?ids=$idsParam');
+  final List data = jsonDecode(response.body);
+  return data.map<Map<String, String>>((g) => {
+    'id': g['id'],
+    'name': g['name'],
+    'image': g['image'] ?? g['thumbnail'] ?? '',
+  }).toList();
+}
 
 
  static Future<List<Map<String, String>>> searchGames(String query) async {
