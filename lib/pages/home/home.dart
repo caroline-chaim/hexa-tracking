@@ -21,19 +21,12 @@ class _HomeState extends State<Home> {
 
   Future<void> _searchGames(String query) async {
     if (query.isEmpty) {
-      setState(() {
-        isSearching = false;
-        games = [];
-      });
+      setState(() { isSearching = false; games = []; });
       return;
     }
     setState(() => isLoading = true);
     final loaded = await ApiService.searchGames(query);
-    setState(() {
-      games = loaded;
-      isLoading = false;
-      isSearching = true;
-    });
+    setState(() { games = loaded; isLoading = false; isSearching = true; });
   }
 
   @override
@@ -46,11 +39,10 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 600;
 
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
+    return AppScaffold(
+      backgroundColor: Colors.grey[100]!,
       body: Column(
         children: [
-          NavigationBarr(),
           Padding(
             padding: EdgeInsets.symmetric(
               horizontal: isMobile ? 16 : 32,
@@ -64,27 +56,21 @@ class _HomeState extends State<Home> {
                         isSearching ? "Resultados" : "Games",
                         style: GoogleFonts.majorMonoDisplay(fontSize: 24),
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       SearchBar(
                         controller: _searchController,
-                        leading: Icon(Icons.search),
+                        leading: const Icon(Icons.search),
                         hintText: 'search',
                         elevation: WidgetStateProperty.all(0),
-                        constraints: BoxConstraints(
-                          maxWidth: double.infinity,
-                          maxHeight: 50,
-                        ),
-                        onSubmitted: (value) => _searchGames(value),
+                        constraints: const BoxConstraints(maxWidth: double.infinity, maxHeight: 50),
+                        onSubmitted: _searchGames,
                         trailing: [
                           if (isSearching)
                             IconButton(
-                              icon: Icon(Icons.close),
+                              icon: const Icon(Icons.close),
                               onPressed: () {
                                 _searchController.clear();
-                                setState(() {
-                                  isSearching = false;
-                                  games = [];
-                                });
+                                setState(() { isSearching = false; games = []; });
                               },
                             ),
                         ],
@@ -97,24 +83,21 @@ class _HomeState extends State<Home> {
                         isSearching ? "Resultados" : "Games",
                         style: GoogleFonts.majorMonoDisplay(fontSize: 36),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       SearchBar(
                         controller: _searchController,
-                        leading: Icon(Icons.search),
+                        leading: const Icon(Icons.search),
                         hintText: 'search',
                         elevation: WidgetStateProperty.all(0),
-                        constraints: BoxConstraints.loose(Size(400, 50)),
-                        onSubmitted: (value) => _searchGames(value),
+                        constraints: BoxConstraints.loose(const Size(400, 50)),
+                        onSubmitted: _searchGames,
                         trailing: [
                           if (isSearching)
                             IconButton(
-                              icon: Icon(Icons.close),
+                              icon: const Icon(Icons.close),
                               onPressed: () {
                                 _searchController.clear();
-                                setState(() {
-                                  isSearching = false;
-                                  games = [];
-                                });
+                                setState(() { isSearching = false; games = []; });
                               },
                             ),
                         ],
@@ -124,16 +107,13 @@ class _HomeState extends State<Home> {
           ),
           Expanded(
             child: isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : isSearching
                     ? games.isEmpty
-                        ? Center(child: Text('Nenhum jogo encontrado'))
+                        ? const Center(child: Text('Nenhum jogo encontrado'))
                         : GridView.builder(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isMobile ? 16 : 32,
-                            ),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
+                            padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: isMobile ? 2 : 5,
                               crossAxisSpacing: isMobile ? 8 : 16,
                               mainAxisSpacing: isMobile ? 8 : 16,
@@ -143,17 +123,12 @@ class _HomeState extends State<Home> {
                             itemBuilder: (context, index) {
                               final game = games[index];
                               return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => GamePage(
-                                        id: game['id']!,
-                                        name: game['name']!,
-                                      ),
-                                    ),
-                                  );
-                                },
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => GamePage(id: game['id']!, name: game['name']!),
+                                  ),
+                                ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: Stack(
@@ -162,23 +137,17 @@ class _HomeState extends State<Home> {
                                       Image.network(
                                         ApiService.proxyImage(game['image']!),
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            Container(color: Colors.grey[300]),
+                                        errorBuilder: (_, __, ___) => Container(color: Colors.grey[300]),
                                       ),
                                       Positioned(
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
+                                        bottom: 0, left: 0, right: 0,
                                         child: Container(
-                                          padding: EdgeInsets.all(6),
+                                          padding: const EdgeInsets.all(6),
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
                                               begin: Alignment.topCenter,
                                               end: Alignment.bottomCenter,
-                                              colors: [
-                                                Colors.transparent,
-                                                Colors.black.withOpacity(0.75),
-                                              ],
+                                              colors: [Colors.transparent, Colors.black.withOpacity(0.75)],
                                             ),
                                           ),
                                           child: Text(
@@ -186,7 +155,7 @@ class _HomeState extends State<Home> {
                                             textAlign: TextAlign.center,
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
                                               fontSize: 12,

@@ -23,10 +23,7 @@ class _LibraryState extends State<Library> {
 
   Future<void> _loadLibrary() async {
     final games = await LibraryService.getLibrary();
-    setState(() {
-      _games = games;
-      _loading = false;
-    });
+    setState(() { _games = games; _loading = false; });
   }
 
   Future<void> _removeGame(String id) async {
@@ -34,90 +31,104 @@ class _LibraryState extends State<Library> {
     await _loadLibrary();
   }
 
+  Future<void> _confirmRemove(BuildContext context, String id, String name) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remover jogo'),
+        content: Text('Remover "$name" da biblioteca?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Remover', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) _removeGame(id);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 245, 245, 245),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const NavigationBarr(),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _games.isEmpty
-                    ? _emptyState()
-                    : _gameGrid(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _emptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.library_books_outlined, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'Sua biblioteca está vazia',
-            style: GoogleFonts.majorMonoDisplay(fontSize: 20, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Adicione jogos clicando em "Adicionar à Biblioteca"\nna página de detalhes de um jogo.',
-            style: TextStyle(color: Colors.grey[500], fontSize: 14, height: 1.6),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _gameGrid() {
     final isMobile = MediaQuery.of(context).size.width < 600;
+
+    return AppScaffold(
+      backgroundColor: const Color.fromARGB(255, 245, 245, 245),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _games.isEmpty
+              ? _emptyState(isMobile)
+              : _gameGrid(isMobile),
+    );
+  }
+
+  Widget _emptyState(bool isMobile) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.library_books_outlined, size: isMobile ? 48 : 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Sua biblioteca está vazia',
+              style: GoogleFonts.majorMonoDisplay(fontSize: isMobile ? 16 : 20, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Adicione jogos clicando em "Adicionar à Biblioteca"\nna página de detalhes de um jogo.',
+              style: TextStyle(color: Colors.grey[500], fontSize: isMobile ? 13 : 14, height: 1.6),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _gameGrid(bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(32, 32, 32, 16),
+          padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, isMobile ? 20 : 32, isMobile ? 16 : 32, 16),
           child: Row(
             children: [
-              Text(
-                'Minha Biblioteca',
-                style: GoogleFonts.majorMonoDisplay(fontSize: 24),
+              Flexible(
+                child: Text(
+                  'Minha Biblioteca',
+                  style: GoogleFonts.majorMonoDisplay(fontSize: isMobile ? 18 : 24),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const SizedBox(width: 12),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.blue[700],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${_games.length}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+                decoration: BoxDecoration(color: Colors.blue[700], borderRadius: BorderRadius.circular(20)),
+                child: Text('${_games.length}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
         ),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24),
             child: GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: isMobile ? 2 : 4,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+                crossAxisSpacing: isMobile ? 10 : 16,
+                mainAxisSpacing: isMobile ? 10 : 16,
                 childAspectRatio: 0.72,
               ),
               itemCount: _games.length,
               itemBuilder: (context, index) => _GameCard(
                 game: _games[index],
-                onRemove: () => _removeGame(_games[index]['id']!),
+                isMobile: isMobile,
+                onRemove: () => _confirmRemove(context, _games[index]['id']!, _games[index]['name'] ?? ''),
               ),
             ),
           ),
@@ -130,7 +141,8 @@ class _LibraryState extends State<Library> {
 class _GameCard extends StatefulWidget {
   final Map<String, String> game;
   final VoidCallback onRemove;
-  const _GameCard({required this.game, required this.onRemove});
+  final bool isMobile;
+  const _GameCard({required this.game, required this.onRemove, required this.isMobile});
 
   @override
   State<_GameCard> createState() => _GameCardState();
@@ -141,6 +153,8 @@ class _GameCardState extends State<_GameCard> {
 
   @override
   Widget build(BuildContext context) {
+    final showRemove = widget.isMobile || _hovering;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
@@ -159,11 +173,9 @@ class _GameCardState extends State<_GameCard> {
         ),
         child: Stack(
           children: [
-            // Card content
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Thumbnail
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   child: AspectRatio(
@@ -171,40 +183,32 @@ class _GameCardState extends State<_GameCard> {
                     child: Image.network(
                       ApiService.proxyImage(widget.game['thumbnail'] ?? ''),
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                      ),
+                      errorBuilder: (_, __, ___) =>
+                          Container(color: Colors.grey[200], child: const Icon(Icons.image_not_supported, color: Colors.grey)),
                     ),
                   ),
                 ),
-                // Info
                 Padding(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(widget.isMobile ? 8 : 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.game['name'] ?? '',
-                        style: GoogleFonts.lato(
-                            fontWeight: FontWeight.bold, fontSize: 13),
+                        style: GoogleFonts.lato(fontWeight: FontWeight.bold, fontSize: widget.isMobile ? 12 : 13),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            widget.game['rating'] ?? '',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                          ),
+                          const Icon(Icons.star, color: Colors.amber, size: 13),
+                          const SizedBox(width: 3),
+                          Text(widget.game['rating'] ?? '',
+                              style: TextStyle(color: Colors.grey[600], fontSize: 11)),
                           const Spacer(),
-                          Text(
-                            widget.game['yearpublished'] ?? '',
-                            style: TextStyle(color: Colors.grey[400], fontSize: 11),
-                          ),
+                          Text(widget.game['yearpublished'] ?? '',
+                              style: TextStyle(color: Colors.grey[400], fontSize: 10)),
                         ],
                       ),
                     ],
@@ -212,12 +216,9 @@ class _GameCardState extends State<_GameCard> {
                 ),
               ],
             ),
-
-            // Remove button (aparece no hover)
-            if (_hovering)
+            if (showRemove)
               Positioned(
-                top: 8,
-                right: 8,
+                top: 6, right: 6,
                 child: GestureDetector(
                   onTap: widget.onRemove,
                   child: Container(
@@ -225,12 +226,9 @@ class _GameCardState extends State<_GameCard> {
                     decoration: BoxDecoration(
                       color: Colors.red[600],
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black26, blurRadius: 4, offset: const Offset(0, 2))
-                      ],
+                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
                     ),
-                    child: const Icon(Icons.close, color: Colors.white, size: 16),
+                    child: const Icon(Icons.close, color: Colors.white, size: 14),
                   ),
                 ),
               ),
