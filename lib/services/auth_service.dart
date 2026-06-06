@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  static const String _baseUrl = 'https://hexatracker.azurewebsites.net';
-  //static const String _baseUrl = 'http://localhost:3000';
+  static const String _baseUrl = 'https://hexa-tracker-server.azurewebsites.net';
+  //  static const String _baseUrl = 'http://localhost:3000';
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'auth_user';
 
