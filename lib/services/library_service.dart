@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class LibraryService {
-  //static const String _baseUrl = 'https://hexatracker.azurewebsites.net';
-  static const String _baseUrl = 'http://localhost:3000';
+  static const String _baseUrl = 'https://hexatracker.azurewebsites.net';
+  //static const String _baseUrl = 'http://localhost:3000';
 
   static Future<Map<String, String>> _authHeaders() async {
     final token = await AuthService.getToken();
