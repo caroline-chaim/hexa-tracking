@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hexa_tracker/services/library_service.dart';
 import 'package:hexa_tracker/services/api_service.dart';
 import 'package:hexa_tracker/ui/navigationBar/navigation_bar.dart';
+import 'package:hexa_tracker/ui/game_page/game_page.dart';
 
 class Library extends StatefulWidget {
   const Library({super.key});
@@ -158,81 +159,93 @@ class _GameCardState extends State<_GameCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(_hovering ? 0.12 : 0.06),
-              blurRadius: _hovering ? 16 : 8,
-              offset: const Offset(0, 4),
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => GamePage(
+              id: widget.game['id']!,
+              name: widget.game['name'] ?? '',
             ),
-          ],
+          ),
         ),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Image.network(
-                      ApiService.proxyImage(widget.game['thumbnail'] ?? ''),
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Container(color: Colors.grey[200], child: const Icon(Icons.image_not_supported, color: Colors.grey)),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(widget.isMobile ? 8 : 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.game['name'] ?? '',
-                        style: GoogleFonts.lato(fontWeight: FontWeight.bold, fontSize: widget.isMobile ? 12 : 13),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 13),
-                          const SizedBox(width: 3),
-                          Text(widget.game['rating'] ?? '',
-                              style: TextStyle(color: Colors.grey[600], fontSize: 11)),
-                          const Spacer(),
-                          Text(widget.game['yearpublished'] ?? '',
-                              style: TextStyle(color: Colors.grey[400], fontSize: 10)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (showRemove)
-              Positioned(
-                top: 6, right: 6,
-                child: GestureDetector(
-                  onTap: widget.onRemove,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.red[600],
-                      shape: BoxShape.circle,
-                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
-                    ),
-                    child: const Icon(Icons.close, color: Colors.white, size: 14),
-                  ),
-                ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_hovering ? 0.12 : 0.06),
+                blurRadius: _hovering ? 16 : 8,
+                offset: const Offset(0, 4),
               ),
-          ],
+            ],
+          ),
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Image.network(
+                        ApiService.proxyImage(widget.game['thumbnail'] ?? ''),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            Container(color: Colors.grey[200], child: const Icon(Icons.image_not_supported, color: Colors.grey)),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(widget.isMobile ? 8 : 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.game['name'] ?? '',
+                          style: GoogleFonts.lato(fontWeight: FontWeight.bold, fontSize: widget.isMobile ? 12 : 13),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.star, color: Colors.amber, size: 13),
+                            const SizedBox(width: 3),
+                            Text(widget.game['rating'] ?? '',
+                                style: TextStyle(color: Colors.grey[600], fontSize: 11)),
+                            const Spacer(),
+                            Text(widget.game['yearpublished'] ?? '',
+                                style: TextStyle(color: Colors.grey[400], fontSize: 10)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              // Botão de remover — sempre visível no mobile, hover no desktop
+              if (showRemove)
+                Positioned(
+                  top: 6, right: 6,
+                  child: GestureDetector(
+                    onTap: widget.onRemove,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.red[600],
+                        shape: BoxShape.circle,
+                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+                      ),
+                      child: const Icon(Icons.close, color: Colors.white, size: 14),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
